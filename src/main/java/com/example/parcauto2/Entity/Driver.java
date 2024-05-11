@@ -51,10 +51,6 @@ public class Driver {
     @OneToOne(mappedBy = "driver", cascade = CascadeType.ALL)
     private driverLicense driverLicense;
 
-    @Enumerated(EnumType.STRING)
-    private DriverType driverType;
 
 
-    public Driver(Long driverId) {
-    }
 }

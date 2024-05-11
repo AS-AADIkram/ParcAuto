@@ -8,6 +8,7 @@ import java.time.LocalTime;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class TripDTO {
@@ -26,4 +27,6 @@ public class TripDTO {
     private int numberOfPassengers;
     private Long driverId;
     private Long vehicleId;
+
+
 }

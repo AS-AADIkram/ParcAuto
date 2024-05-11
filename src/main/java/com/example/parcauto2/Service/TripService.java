@@ -17,10 +17,16 @@ public class TripService {
     private final TripRepository tripRepository;
     private final TripMapper tripMapper;
 
+
     @Autowired
     public TripService(TripRepository tripRepository, TripMapper tripMapper) {
         this.tripRepository = tripRepository;
         this.tripMapper = tripMapper;
+    }
+    public TripDTO createTrip(TripDTO tripDTO) {
+        Trip trip = tripMapper.toEntity(tripDTO);
+        Trip savedTrip = tripRepository.save(trip);
+        return tripMapper.toDTO(savedTrip);
     }
 
     public List<TripDTO> getAllTrips() {
@@ -45,4 +51,6 @@ public class TripService {
     public void deleteTripById(Long id) {
         tripRepository.deleteById(id);
     }
+
+
 }

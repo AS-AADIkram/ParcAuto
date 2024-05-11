@@ -24,10 +24,14 @@ public class driverLicense {
 
     private LocalDate issueDate;
 
+    private LocalDate expirationDate;
 
     private String type;
 
     @OneToOne
     @JoinColumn(name = "driver_id")
     private Driver driver;
+
+    @Enumerated(EnumType.STRING)
+    private licenseType licenseType;
 }

@@ -28,9 +28,6 @@ public class Vehicle {
     private String model;
 
 
-    private String vehicleType;
-
-
     private int mileage;
 
 
@@ -45,6 +42,8 @@ public class Vehicle {
     @OneToMany(mappedBy = "vehicle")
     private List<Trip> trips;
 
-    public Vehicle(Long vehicleId) {
-    }
+    @Enumerated(EnumType.STRING)
+    private vehicleType vehicleType;
+
+
 }

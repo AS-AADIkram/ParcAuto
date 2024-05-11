@@ -5,91 +5,141 @@ import com.example.parcauto2.Mapper.TripMapper;
 import com.example.parcauto2.Service.TripService;
 import com.example.parcauto2.dao.TripRepository;
 import com.example.parcauto2.DTO.TripDTO;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.time.LocalTime;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
+@SpringBootTest
+@Transactional
+@ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class TripServiceTest {
 
-    @Mock
+    @Autowired
     private TripRepository tripRepository;
 
-    @Mock
+    @Autowired
     private TripMapper tripMapper;
 
-    @InjectMocks
+    @Autowired
     private TripService tripService;
-
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-    }
 
     @Test
     public void testGetAllTrips() {
-        List<Trip> trips = new ArrayList<>();
-        trips.add(new Trip());
-        when(tripRepository.findAll()).thenReturn(trips);
+        // Given
+        Trip trip1 = Trip.builder()
+                .StartLocation("Start 1")
+                .EndLocation("End 1")
+                .build();
 
-        List<TripDTO> tripDTOs = new ArrayList<>();
-        tripDTOs.add(new TripDTO());
+        Trip trip2 = Trip.builder()
+                .StartLocation("Start 2")
+                .EndLocation("End 2")
+                .build();
 
-        when(tripMapper.toDTO(any(Trip.class))).thenReturn(new TripDTO());
+        tripRepository.save(trip1);
+        tripRepository.save(trip2);
 
-        List<TripDTO> result = tripService.getAllTrips();
+        // When
+        List<TripDTO> tripDTOList = tripService.getAllTrips();
 
-        assertEquals(tripDTOs.size(), result.size());
-        verify(tripRepository, times(1)).findAll();
+        // Then
+        assertNotNull(tripDTOList);
+        assertEquals(2, tripDTOList.size());
+        assertEquals("Start 1", tripDTOList.get(0).getStartLocation());
+        assertEquals("End 1", tripDTOList.get(0).getEndLocation());
+        assertEquals("Start 2", tripDTOList.get(1).getStartLocation());
+        assertEquals("End 2", tripDTOList.get(1).getEndLocation());
     }
 
     @Test
     public void testGetTripById() {
-        Long id = 1L;
-        Trip trip = new Trip();
-        trip.setId(id);
-        when(tripRepository.findById(id)).thenReturn(Optional.of(trip));
+        // Given
+        Trip trip = Trip.builder()
+                .StartLocation("Start")
+                .EndLocation("End")
+                .build();
+        trip = tripRepository.save(trip);
 
-        TripDTO tripDTO = new TripDTO();
-        tripDTO.setId(id);
-        when(tripMapper.toDTO(any(Trip.class))).thenReturn(tripDTO);
+        // When
+        TripDTO tripDTO = tripService.getTripById(trip.getId());
 
-        TripDTO result = tripService.getTripById(id);
-
-        assertEquals(tripDTO.getId(), result.getId());
-        verify(tripRepository, times(1)).findById(id);
+        // Then
+        assertNotNull(tripDTO);
+        assertEquals("Start", tripDTO.getStartLocation());
+        assertEquals("End", tripDTO.getEndLocation());
     }
 
     @Test
     public void testSaveTrip() {
+        // Given
         TripDTO tripDTO = new TripDTO();
-        tripDTO.setId(1L);
-        Trip trip = new Trip();
-        trip.setId(1L);
+        tripDTO.setStartLocation("Start");
+        tripDTO.setEndLocation("End");
 
-        when(tripMapper.toEntity(tripDTO)).thenReturn(trip);
-        when(tripRepository.save(trip)).thenReturn(trip);
-        when(tripMapper.toDTO(trip)).thenReturn(tripDTO);
+        // When
+        TripDTO savedTripDTO = tripService.saveTrip(tripDTO);
 
-        TripDTO result = tripService.saveTrip(tripDTO);
+        // Then
+        assertNotNull(savedTripDTO);
+        assertNotNull(savedTripDTO.getId());
+        assertEquals("Start", savedTripDTO.getStartLocation());
+        assertEquals("End", savedTripDTO.getEndLocation());
 
-        assertEquals(tripDTO.getId(), result.getId());
-        verify(tripRepository, times(1)).save(trip);
+        Trip trip = tripRepository.findById(savedTripDTO.getId()).orElse(null);
+        assertNotNull(trip);
+        assertEquals("Start", trip.getStartLocation());
+        assertEquals("End", trip.getEndLocation());
     }
 
     @Test
     public void testDeleteTripById() {
-        Long id = 1L;
-        tripService.deleteTripById(id);
-        verify(tripRepository, times(1)).deleteById(id);
+        // Given
+        Trip trip = Trip.builder()
+                .StartLocation("Start")
+                .EndLocation("End")
+                .build();
+        trip = tripRepository.save(trip);
+
+        // When
+        tripService.deleteTripById(trip.getId());
+
+        // Then
+        Trip deletedTrip = tripRepository.findById(trip.getId()).orElse(null);
+        assertNull(deletedTrip);
+    }
+
+    @Test
+    public void testCreateTrip() {
+        // Given
+        TripDTO tripDTO = new TripDTO();
+        tripDTO.setStartLocation("Start");
+        tripDTO.setEndLocation("End");
+
+        // When
+        TripDTO savedTripDTO = tripService.createTrip(tripDTO);
+
+        // Then
+        assertNotNull(savedTripDTO);
+        assertNotNull(savedTripDTO.getId());
+        assertEquals("Start", savedTripDTO.getStartLocation());
+        assertEquals("End", savedTripDTO.getEndLocation());
+
+        Trip trip = tripRepository.findById(savedTripDTO.getId()).orElse(null);
+        assertNotNull(trip);
+        assertEquals("Start", trip.getStartLocation());
+        assertEquals("End", trip.getEndLocation());
     }
 }
